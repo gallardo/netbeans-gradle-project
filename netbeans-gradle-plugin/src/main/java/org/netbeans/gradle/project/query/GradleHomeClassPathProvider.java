@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -27,6 +28,7 @@ import org.openide.util.lookup.ServiceProviders;
 @ServiceProviders({@ServiceProvider(service = ClassPathProvider.class)})
 public final class GradleHomeClassPathProvider implements ClassPathProvider {
     private static final URL[] NO_URLS = new URL[0];
+    private static final String GRADLE_LIB_PLUGINS_SUBDIR_NAME = "plugins";
 
     private final SimpleCache<FileObject, ClassPath> sourcePathsCache;
     private final SimpleCache<FileObject, ClassPath> binPathsCache;
@@ -51,8 +53,16 @@ public final class GradleHomeClassPathProvider implements ClassPathProvider {
             return NO_URLS;
         }
 
-        File[] jars = libDir.listFiles(filter);
-        List<URL> result = new ArrayList<>(jars.length);
+        File[] jarsInGradleLib = libDir.listFiles(filter);
+        File[] jarsInGradleLibPlugins =
+                new File(libDir,GRADLE_LIB_PLUGINS_SUBDIR_NAME).listFiles(filter);
+        List<File>jars = new ArrayList<File>(
+                jarsInGradleLib.length + jarsInGradleLibPlugins.length);
+        jars.addAll(Arrays.asList(jarsInGradleLib));
+        jars.addAll(Arrays.asList(jarsInGradleLibPlugins));
+        
+        
+        List<URL> result = new ArrayList<>(jars.size());
         for (File jar: jars) {
             URL url = FileUtil.urlForArchiveOrDir(jar);
             if (url != null) {

@@ -89,7 +89,11 @@ public final class GradleFilesClassPathProvider implements ClassPathProvider {
             @Override
             public boolean accept(File dir, String name) {
                 String lowerCaseName = name.toLowerCase(Locale.US);
-                return !lowerCaseName.startsWith("groovy-") && lowerCaseName.endsWith(".jar");
+                boolean result = lowerCaseName.endsWith(".jar");
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Filtering {0}/{1}: {2}", new Object[]{dir.getPath(), name, result});
+                }
+                return result;
             }
         });
     }
