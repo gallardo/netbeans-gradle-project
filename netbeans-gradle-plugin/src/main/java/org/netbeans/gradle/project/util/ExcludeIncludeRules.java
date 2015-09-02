@@ -18,11 +18,11 @@ public final class ExcludeIncludeRules implements Serializable {
     public static ExcludeIncludeRules ALLOW_ALL = new ExcludeIncludeRules(
             FilterPatterns.ALLOW_ALL);
 
-    private final FilterPatterns sourceIncludePatterns;
+    private final FilterPatterns filterPatterns;
 
-    private ExcludeIncludeRules(FilterPatterns sourceIncludePatterns) {
-        ExceptionHelper.checkNotNullArgument(sourceIncludePatterns, "sourceIncludePatterns");
-        this.sourceIncludePatterns = sourceIncludePatterns;
+    private ExcludeIncludeRules(FilterPatterns filterPatterns) {
+        ExceptionHelper.checkNotNullArgument(filterPatterns, "filterPatterns");
+        this.filterPatterns = filterPatterns;
     }
 
     private static ExcludeIncludeRules create(FilterPatterns filterPatterns) {
@@ -38,7 +38,7 @@ public final class ExcludeIncludeRules implements Serializable {
     }
 
     public boolean isAllowAll() {
-        return sourceIncludePatterns.isAllowAll();
+        return filterPatterns.isAllowAll();
     }
 
     public boolean isIncluded(Path rootPath, FileObject file) {
@@ -75,14 +75,14 @@ public final class ExcludeIncludeRules implements Serializable {
         return ExcludeInclude.isFileIncludedUnderRootpath(
                 file,
                 rootPath,
-                sourceIncludePatterns.getExcludePatterns(),
-                sourceIncludePatterns.getIncludePatterns());
+                filterPatterns.getExcludePatterns(),
+                filterPatterns.getIncludePatterns());
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.sourceIncludePatterns);
+        hash = 89 * hash + Objects.hashCode(this.filterPatterns);
         return hash;
     }
 
@@ -93,7 +93,7 @@ public final class ExcludeIncludeRules implements Serializable {
         if (getClass() != obj.getClass()) return false;
 
         final ExcludeIncludeRules other = (ExcludeIncludeRules)obj;
-        return Objects.equals(this.sourceIncludePatterns, other.sourceIncludePatterns);
+        return Objects.equals(this.filterPatterns, other.filterPatterns);
     }
 
     private Object writeReplace() {
@@ -110,7 +110,7 @@ public final class ExcludeIncludeRules implements Serializable {
         private final FilterPatterns sourceIncludePatterns;
 
         public SerializedFormat(ExcludeIncludeRules source) {
-            this.sourceIncludePatterns = source.sourceIncludePatterns;
+            this.sourceIncludePatterns = source.filterPatterns;
         }
 
         private Object readResolve() throws ObjectStreamException {
