@@ -9,17 +9,17 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.gradle.model.util.CollectionUtils;
 
-public final class SourceIncludePatterns implements Serializable {
+public final class FilterPatterns implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public static SourceIncludePatterns ALLOW_ALL = new SourceIncludePatterns(
+    public static FilterPatterns ALLOW_ALL = new FilterPatterns(
             Collections.<String>emptySet(),
             Collections.<String>emptySet());
 
     private final Set<String> excludePatterns;
     private final Set<String> includePatterns;
 
-    private SourceIncludePatterns(
+    private FilterPatterns(
             Collection<? extends String> excludePatterns,
             Collection<? extends String> includePatterns) {
 
@@ -30,14 +30,14 @@ public final class SourceIncludePatterns implements Serializable {
         CollectionUtils.checkNoNullElements(includePatterns, "includePatterns");
     }
 
-    public static SourceIncludePatterns create(
+    public static FilterPatterns create(
             Collection<? extends String> excludePatterns,
             Collection<? extends String> includePatterns) {
         if (excludePatterns.isEmpty() && includePatterns.isEmpty()) {
             return ALLOW_ALL;
         }
 
-        return new SourceIncludePatterns(excludePatterns, includePatterns);
+        return new FilterPatterns(excludePatterns, includePatterns);
     }
 
     public boolean isAllowAll() {
@@ -50,6 +50,11 @@ public final class SourceIncludePatterns implements Serializable {
 
     public Set<String> getIncludePatterns() {
         return includePatterns;
+    }
+
+    @Override
+    public String toString() {
+        return "FilterPatterns{exc:" + excludePatterns + ", inc:" + includePatterns + '}';
     }
 
     @Override
@@ -66,7 +71,7 @@ public final class SourceIncludePatterns implements Serializable {
         if (obj == this) return true;
         if (getClass() != obj.getClass()) return false;
 
-        final SourceIncludePatterns other = (SourceIncludePatterns)obj;
+        final FilterPatterns other = (FilterPatterns)obj;
         return excludePatterns.equals(other.excludePatterns)
                 && includePatterns.equals(other.includePatterns);
     }
@@ -85,13 +90,13 @@ public final class SourceIncludePatterns implements Serializable {
         private final Set<String> excludePatterns;
         private final Set<String> includePatterns;
 
-        public SerializedFormat(SourceIncludePatterns source) {
+        public SerializedFormat(FilterPatterns source) {
             this.excludePatterns = source.excludePatterns;
             this.includePatterns = source.includePatterns;
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return SourceIncludePatterns.create(excludePatterns, includePatterns);
+            return FilterPatterns.create(excludePatterns, includePatterns);
         }
     }
 }

@@ -291,10 +291,10 @@ implements
 
         for (JavaSourceSet sourceSet: module.getSources()) {
             for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
-                ExcludeIncludeRules includeRules = ExcludeIncludeRules.create(sourceGroup);
+                ExcludeIncludeRules rules = ExcludeIncludeRules.create(sourceGroup);
                 Set<File> sourceRoots = sourceGroup.getSourceRoots();
 
-                result.addAll(getPathResources(sourceRoots, new HashSet<File>(), includeRules));
+                result.addAll(getPathResources(sourceRoots, new HashSet<File>(), rules));
             }
         }
     }
@@ -331,16 +331,19 @@ implements
         return getPathResources(files, invalid, ExcludeIncludeRules.ALLOW_ALL);
     }
 
+    /**
+     * @return list of path resources, filter sensitive
+     */
     private static List<PathResourceImplementation> getPathResources(
             Collection<File> files,
             Set<File> invalid,
-            ExcludeIncludeRules includeRules) {
+            ExcludeIncludeRules filterRules) {
 
         List<PathResourceImplementation> result = new ArrayList<>(files.size());
         for (File file: new LinkedHashSet<>(files)) {
-            PathResourceImplementation pathResource = includeRules.isAllowAll()
+            PathResourceImplementation pathResource = filterRules.isAllowAll()
                     ? toPathResource(file)
-                    : toPathResource(file, includeRules);
+                    : toPathResource(file, filterRules);
             // Ignore invalid classpath entries
             if (pathResource != null) {
                 result.add(pathResource);
@@ -703,21 +706,21 @@ implements
 
         private final Path root;
         private final URL url;
-        private final ExcludeIncludeRules includeRules;
+        private final ExcludeIncludeRules filterRules;
 
-        private ExcludeAwarePathResource(File root, URL rootUrl, ExcludeIncludeRules includeRules) {
+        private ExcludeAwarePathResource(File root, URL rootUrl, ExcludeIncludeRules filterRules) {
             this.root = root.toPath();
             this.url = rootUrl;
-            this.includeRules = includeRules;
+            this.filterRules = filterRules;
         }
 
-        public static ExcludeAwarePathResource tryCreate(File root, ExcludeIncludeRules includeRules) {
+        public static ExcludeAwarePathResource tryCreate(File root, ExcludeIncludeRules filterRules) {
             URL url = FileUtil.urlForArchiveOrDir(root);
             if (url == null) {
                 return null;
             }
 
-            return new ExcludeAwarePathResource(root, url, includeRules);
+            return new ExcludeAwarePathResource(root, url, filterRules);
         }
 
         @Override
@@ -734,14 +737,14 @@ implements
         public boolean includes(URL urlRoot, String resource) {
             String normPath = resource.replace("/", root.getFileSystem().getSeparator());
             Path resourcePath = root.resolve(normPath);
-            return includeRules.isIncluded(root, resourcePath);
+            return filterRules.isIncluded(root, resourcePath);
         }
 
         @Override
         public int hashCode() {
             int hash = 5;
             hash = 43 * hash + Objects.hashCode(this.root);
-            hash = 43 * hash + Objects.hashCode(this.includeRules);
+            hash = 43 * hash + Objects.hashCode(this.filterRules);
             return hash;
         }
 
@@ -753,7 +756,7 @@ implements
 
             final ExcludeAwarePathResource other = (ExcludeAwarePathResource)obj;
             return Objects.equals(this.root, other.root)
-                    && Objects.equals(this.includeRules, other.includeRules);
+                    && Objects.equals(this.filterRules, other.filterRules);
         }
 
         @Override

@@ -9,40 +9,36 @@ import java.nio.file.Path;
 import java.util.Objects;
 import org.jtrim.utils.ExceptionHelper;
 import org.netbeans.gradle.model.java.JavaSourceGroup;
-import org.netbeans.gradle.model.java.SourceIncludePatterns;
+import org.netbeans.gradle.model.java.FilterPatterns;
 import org.openide.filesystems.FileObject;
 
 public final class ExcludeIncludeRules implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static ExcludeIncludeRules ALLOW_ALL = new ExcludeIncludeRules(
-            SourceIncludePatterns.ALLOW_ALL);
+            FilterPatterns.ALLOW_ALL);
 
-    private final SourceIncludePatterns sourceIncludePatterns;
+    private final FilterPatterns sourceIncludePatterns;
 
-    private ExcludeIncludeRules(SourceIncludePatterns sourceIncludePatterns) {
+    private ExcludeIncludeRules(FilterPatterns sourceIncludePatterns) {
         ExceptionHelper.checkNotNullArgument(sourceIncludePatterns, "sourceIncludePatterns");
         this.sourceIncludePatterns = sourceIncludePatterns;
     }
 
-    public static ExcludeIncludeRules create(SourceIncludePatterns sourceIncludePatterns) {
-        if (sourceIncludePatterns.isAllowAll()) {
+    private static ExcludeIncludeRules create(FilterPatterns filterPatterns) {
+        if (filterPatterns.isAllowAll()) {
             return ALLOW_ALL;
         }
 
-        return new ExcludeIncludeRules(sourceIncludePatterns);
+        return new ExcludeIncludeRules(filterPatterns);
     }
 
     public static ExcludeIncludeRules create(JavaSourceGroup sourceGroup) {
-        return create(sourceGroup.getExcludePatterns());
+        return create(sourceGroup.getFilterPatterns());
     }
 
     public boolean isAllowAll() {
         return sourceIncludePatterns.isAllowAll();
-    }
-
-    public SourceIncludePatterns getSourceIncludePatterns() {
-        return sourceIncludePatterns;
     }
 
     public boolean isIncluded(Path rootPath, FileObject file) {
@@ -54,7 +50,7 @@ public final class ExcludeIncludeRules implements Serializable {
         }
 
         Path path = GradleFileUtils.toPath(file);
-        return path != null ? isIncluded(rootPath, path) : true;
+        return path != null ? isIncluded(rootPath, path) : true; // XXX: (null==path)=> true? 
     }
 
     public boolean isIncluded(Path rootPath, File file) {
@@ -76,7 +72,7 @@ public final class ExcludeIncludeRules implements Serializable {
             return true;
         }
 
-        return ExcludeInclude.includeFile(
+        return ExcludeInclude.isFileIncludedUnderRootpath(
                 file,
                 rootPath,
                 sourceIncludePatterns.getExcludePatterns(),
@@ -111,7 +107,7 @@ public final class ExcludeIncludeRules implements Serializable {
     private static final class SerializedFormat implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        private final SourceIncludePatterns sourceIncludePatterns;
+        private final FilterPatterns sourceIncludePatterns;
 
         public SerializedFormat(ExcludeIncludeRules source) {
             this.sourceIncludePatterns = source.sourceIncludePatterns;

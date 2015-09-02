@@ -6,7 +6,20 @@ import java.nio.file.PathMatcher;
 import java.util.Collection;
 
 public final class ExcludeInclude {
-    public static boolean includeFile(
+    /**
+     * 
+     * @param file to test
+     * @param rootPath file must be under this path
+     * @param excludePatterns will be translated into <tt>glob:</tt> patterns
+     * @param includePatterns will be translated into <tt>glob:</tt> patterns
+     * @return <tt>true</tt> if <ul>
+     *      <li><tt>file</tt> is under <tt>rootPath</tt></li>
+     *      <li><strong>and</strong> doesn't match any <tt>excludePatterns</tt></li>
+     *      <li><strong>and</strong> matches at least one <tt>includePatterns</tt> <strong>or</strong>
+     *          <tt>includePatterns</tt> is empty</li>
+     *      </ul>
+     */
+    public static boolean isFileIncludedUnderRootpath(
             Path file,
             Path rootPath,
             Collection<String> excludePatterns,

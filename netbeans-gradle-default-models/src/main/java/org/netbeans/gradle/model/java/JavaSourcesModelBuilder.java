@@ -179,7 +179,7 @@ implements
             Set<File> srcDirs = sourceGroup.getSrcDirs();
             Set<String> excludes = sourceGroup.getExcludes();
             Set<String> includes = sourceGroup.getIncludes();
-            SourceIncludePatterns patterns = SourceIncludePatterns.create(excludes, includes);
+            FilterPatterns patterns = FilterPatterns.create(excludes, includes);
             return new JavaSourceGroup(name, srcDirs, patterns);
         }
 

@@ -391,7 +391,7 @@ public class MultiLevelJavaProjectTest {
                 JavaSourceGroup group = findSourceGroup(sourcesModel, JavaSourceSet.NAME_MAIN, JavaSourceGroupName.JAVA);
                 assertNotNull("apps:app1 must not have a main/java source group.", group);
 
-                SourceIncludePatterns patterns = group.getExcludePatterns();
+                FilterPatterns patterns = group.getFilterPatterns();
                 assertEquals("includes", Collections.singleton("**"), patterns.getIncludePatterns());
                 assertEquals("excludes", Collections.singleton("**/excluded/"), patterns.getExcludePatterns());
             }

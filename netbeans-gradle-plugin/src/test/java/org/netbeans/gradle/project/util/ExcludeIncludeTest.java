@@ -29,7 +29,7 @@ public class ExcludeIncludeTest {
             String... subPaths) {
 
         Path rootDir = getAbsPath("root", "subDir");
-        Assert.assertTrue(ExcludeInclude.includeFile(
+        Assert.assertTrue(ExcludeInclude.isFileIncludedUnderRootpath(
                 subPath(rootDir, subPaths),
                 rootDir,
                 excludes,
@@ -43,7 +43,7 @@ public class ExcludeIncludeTest {
 
         Path baseDir = getAbsPath("root");
         Path rootDir = subPath(baseDir, "include");
-        Assert.assertFalse(ExcludeInclude.includeFile(
+        Assert.assertFalse(ExcludeInclude.isFileIncludedUnderRootpath(
                 subPath(baseDir, subPaths),
                 rootDir,
                 excludes,

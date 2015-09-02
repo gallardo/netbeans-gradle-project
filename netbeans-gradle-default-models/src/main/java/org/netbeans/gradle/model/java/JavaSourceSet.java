@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import org.netbeans.gradle.model.util.TransferableExceptionWrapper;
 
 /**
- * Defines the source set of a Gradle Java project. A source set is set of
+ * Defines the source set of a Gradle Java project. A source set is a set of
  * source files used in a single compilation step. For example, in Java projects
  * you have a "main" source set by default which can be accessed in the build
  * script as shown in the code below:

@@ -9,8 +9,15 @@ import org.netbeans.gradle.model.util.CollectionUtils;
 
 /**
  * Defines a set of source roots of a Gradle project. For example, a source
- * group can be Java source files or resource files within a particular source
- * set.
+ * group can be the group of java source files or the group of resource files
+ * within a particular source set.</P>
+ * In the gradle build script they can be set as shown in the code below:
+ * <pre>
+ * sourceSets {
+ *     main.java.srcDirs = ["javadir1","javadir2"] // "Main JAVA" JavaSourceGroup
+ *     main.resources.srcDirs = ["resdir1","resdir2"] // "Main RESOURCES" JavaSourceGroup
+ * }
+ * </pre>
  * <P>
  * Instances of this class are immutable and therefore are safe to be shared
  * across multiple threads.
@@ -24,7 +31,7 @@ public final class JavaSourceGroup implements Serializable {
     private final JavaSourceGroupName groupName;
     private final Set<File> sourceRoots;
 
-    private final SourceIncludePatterns excludePatterns;
+    private final FilterPatterns patternFilters;
 
     /**
      * Creates a new {@code JavaSourceGroup} with the given properties.
@@ -39,7 +46,7 @@ public final class JavaSourceGroup implements Serializable {
      *   {@code null}
      */
     public JavaSourceGroup(JavaSourceGroupName groupName, Collection<? extends File> sourceRoots) {
-        this(groupName, sourceRoots, SourceIncludePatterns.ALLOW_ALL);
+        this(groupName, sourceRoots, FilterPatterns.ALLOW_ALL);
     }
 
     /**
@@ -50,7 +57,7 @@ public final class JavaSourceGroup implements Serializable {
      * @param sourceRoots the set of source roots of this source group. This
      *   argument cannot be {@code null} and cannot contain {@code null}
      *   elements.
-     * @param excludePatterns the exclude and include patterns used
+     * @param filterPatterns the exclude and include patterns used
      *   to further exclude sources from this source group. This argument
      *   cannot be {@code null}.
      *
@@ -60,13 +67,13 @@ public final class JavaSourceGroup implements Serializable {
     public JavaSourceGroup(
             JavaSourceGroupName groupName,
             Collection<? extends File> sourceRoots,
-            SourceIncludePatterns excludePatterns) {
+            FilterPatterns filterPatterns) {
         if (groupName == null) throw new NullPointerException("groupName");
-        if (excludePatterns == null) throw new NullPointerException("excludePatterns");
+        if (filterPatterns == null) throw new NullPointerException("filterPatterns");
 
         this.groupName = groupName;
         this.sourceRoots = CollectionUtils.copyToLinkedHashSet(sourceRoots);
-        this.excludePatterns = excludePatterns;
+        this.patternFilters = filterPatterns;
 
         CollectionUtils.checkNoNullElements(this.sourceRoots, "sourceRoots");
     }
@@ -112,13 +119,13 @@ public final class JavaSourceGroup implements Serializable {
      * @return the patterns of paths to be excluded from this source group.
      *   This method never returns {@code null}.
      */
-    public SourceIncludePatterns getExcludePatterns() {
+    public FilterPatterns getFilterPatterns() {
         // The null check is there for backward compatibility.
         // That is, when this object was serialized with a previous version
         // of this class.
-        return excludePatterns != null
-                ? excludePatterns
-                : SourceIncludePatterns.ALLOW_ALL;
+        return patternFilters != null
+                ? patternFilters
+                : FilterPatterns.ALLOW_ALL;
     }
 
     @Override
@@ -126,7 +133,7 @@ public final class JavaSourceGroup implements Serializable {
         int hash = 7;
         hash = 11 * hash + (this.groupName != null ? this.groupName.hashCode() : 0);
         hash = 11 * hash + (this.sourceRoots != null ? this.sourceRoots.hashCode() : 0);
-        hash = 11 * hash + (this.excludePatterns != null ? this.excludePatterns.hashCode() : 0);
+        hash = 11 * hash + (this.patternFilters != null ? this.patternFilters.hashCode() : 0);
         return hash;
     }
 
@@ -138,14 +145,14 @@ public final class JavaSourceGroup implements Serializable {
         final JavaSourceGroup other = (JavaSourceGroup)obj;
         if (this.groupName != other.groupName) return false;
         if (this.sourceRoots != other.sourceRoots && (this.sourceRoots == null || !this.sourceRoots.equals(other.sourceRoots))) return false;
-        return this.excludePatterns == other.excludePatterns || (this.excludePatterns != null && this.excludePatterns.equals(other.excludePatterns));
+        return this.patternFilters == other.patternFilters || (this.patternFilters != null && this.patternFilters.equals(other.patternFilters));
     }
 
     private Object readResolve() throws ObjectStreamException {
         // The null check is there for backward compatibility.
         // That is, when this object was serialized with a previous version
         // of this class.
-        return excludePatterns != null
+        return patternFilters != null
                 ? this
                 : new JavaSourceGroup(groupName, sourceRoots);
     }
