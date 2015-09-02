@@ -45,7 +45,7 @@ import org.netbeans.gradle.project.java.model.NbJavaModel;
 import org.netbeans.gradle.project.java.model.NbJavaModule;
 import org.netbeans.gradle.project.properties.NbProperties;
 import org.netbeans.gradle.project.query.GradleFilesClassPathProvider;
-import org.netbeans.gradle.project.util.ExcludeIncludeRules;
+import org.netbeans.gradle.project.util.FilterRules;
 import org.netbeans.gradle.project.util.ListenerRegistrations;
 import org.netbeans.gradle.project.util.NbFileUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -215,13 +215,13 @@ implements
         return isInOneOf(file, roots, null);
     }
 
-    private boolean isInOneOf(File file, Collection<File> roots, ExcludeIncludeRules excludeRules) {
+    private boolean isInOneOf(File file, Collection<File> roots, FilterRules filterRules) {
         for (File root: roots) {
             if (NbFileUtils.isParentOrSame(root, file)) {
-                if (excludeRules == null) {
+                if (filterRules == null) {
                     return true;
                 }
-                return excludeRules.isIncluded(root.toPath(), file);
+                return filterRules.isIncluded(root.toPath(), file);
             }
         }
         return false;
@@ -246,8 +246,8 @@ implements
             }
 
             for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
-                ExcludeIncludeRules excludeRules = ExcludeIncludeRules.create(sourceGroup);
-                if (isInOneOf(file, sourceGroup.getSourceRoots(), excludeRules)) {
+                FilterRules filterRules = FilterRules.create(sourceGroup);
+                if (isInOneOf(file, sourceGroup.getSourceRoots(), filterRules)) {
                     return sourceSet;
                 }
             }
@@ -289,9 +289,21 @@ implements
             NbJavaModule module,
             List<PathResourceImplementation> result) {
 
+        LOGGER.log(Level.FINE, "Adding sources for module {0}", module.getShortName());
         for (JavaSourceSet sourceSet: module.getSources()) {
+            LOGGER.log(Level.FINE, "Examining sourceSet {0}", sourceSet.getName());
             for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
-                ExcludeIncludeRules rules = ExcludeIncludeRules.create(sourceGroup);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE,
+                            "[Module,sourceSet,sourceGroup]: [{0},{1},{2}] - Filtering sourceRoot[s] {3} using filter[s] {4}",
+                            new Object[]{
+                            module.getShortName(),
+                            sourceSet.getName(),
+                            sourceGroup.getGroupName(),
+                            sourceGroup.getSourceRoots(),
+                            sourceGroup.getFilterPatterns()});
+                }
+                FilterRules rules = FilterRules.create(sourceGroup);
                 Set<File> sourceRoots = sourceGroup.getSourceRoots();
 
                 result.addAll(getPathResources(sourceRoots, new HashSet<File>(), rules));
@@ -300,6 +312,7 @@ implements
     }
 
     private void updateAllSources() {
+        LOGGER.fine("Updating all sources...");
         NbJavaModel currentModel = javaExt.getCurrentModel();
         NbJavaModule mainModule = currentModel.getMainModule();
 
@@ -314,6 +327,7 @@ implements
         }
 
         allSources = Collections.unmodifiableList(new ArrayList<>(sources));
+        LOGGER.fine("...All sources updated.");
     }
 
     private static PathResourceImplementation toPathResource(File file) {
@@ -321,29 +335,37 @@ implements
         return url != null ? ClassPathSupport.createResource(url) : null;
     }
 
-    private static PathResourceImplementation toPathResource(File file, ExcludeIncludeRules includeRules) {
-        return ExcludeAwarePathResource.tryCreate(file, includeRules);
+    private static PathResourceImplementation toPathResource(File file, FilterRules includeRules) {
+        return FilterablePathResource.tryCreate(file, includeRules);
     }
 
     private static List<PathResourceImplementation> getPathResources(
             Collection<File> files,
             Set<File> invalid) {
-        return getPathResources(files, invalid, ExcludeIncludeRules.ALLOW_ALL);
+        return getPathResources(files, invalid, FilterRules.ALLOW_ALL);
     }
 
     /**
-     * @return list of path resources, filter sensitive
+     * @return list of filter-aware resources
      */
     private static List<PathResourceImplementation> getPathResources(
             Collection<File> files,
             Set<File> invalid,
-            ExcludeIncludeRules filterRules) {
+            FilterRules filterRules) {
 
         List<PathResourceImplementation> result = new ArrayList<>(files.size());
         for (File file: new LinkedHashSet<>(files)) {
             PathResourceImplementation pathResource = filterRules.isAllowAll()
                     ? toPathResource(file)
                     : toPathResource(file, filterRules);
+            if (LOGGER.isLoggable(Level.FINEST) && !filterRules.isAllowAll()) {
+                LOGGER.log(Level.FINEST, "file: {0} -> pathResource: {1} (isAllowAll: {2})",
+                        new Object[]{
+                            file,
+                            pathResource,
+                            filterRules.isAllowAll()
+                        });
+            }
             // Ignore invalid classpath entries
             if (pathResource != null) {
                 result.add(pathResource);
@@ -398,7 +420,7 @@ implements
         List<PathResourceImplementation> sourcePaths = new LinkedList<>();
         for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
             Set<File> sourceRoots = sourceGroup.getSourceRoots();
-            ExcludeIncludeRules includeRules = ExcludeIncludeRules.create(sourceGroup);
+            FilterRules includeRules = FilterRules.create(sourceGroup);
 
             sourcePaths.addAll(getPathResources(sourceRoots, invalid, includeRules));
         }
@@ -698,7 +720,7 @@ implements
         }
     }
 
-    private static final class ExcludeAwarePathResource
+    private static final class FilterablePathResource
     extends
             PathResourceBase
     implements
@@ -706,21 +728,28 @@ implements
 
         private final Path root;
         private final URL url;
-        private final ExcludeIncludeRules filterRules;
+        private final FilterRules filterRules;
 
-        private ExcludeAwarePathResource(File root, URL rootUrl, ExcludeIncludeRules filterRules) {
+        private FilterablePathResource(File root, URL rootUrl, FilterRules filterRules) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.INFO,
+                        "FilterablePathResource(root: {0}, rootUrl: {1}, filterRules: {2})",
+                        new Object[] {
+                            root, rootUrl, filterRules
+                        });
+            }
             this.root = root.toPath();
             this.url = rootUrl;
             this.filterRules = filterRules;
         }
 
-        public static ExcludeAwarePathResource tryCreate(File root, ExcludeIncludeRules filterRules) {
+        public static FilterablePathResource tryCreate(File root, FilterRules filterRules) {
             URL url = FileUtil.urlForArchiveOrDir(root);
             if (url == null) {
                 return null;
             }
 
-            return new ExcludeAwarePathResource(root, url, filterRules);
+            return new FilterablePathResource(root, url, filterRules);
         }
 
         @Override
@@ -737,7 +766,19 @@ implements
         public boolean includes(URL urlRoot, String resource) {
             String normPath = resource.replace("/", root.getFileSystem().getSeparator());
             Path resourcePath = root.resolve(normPath);
-            return filterRules.isIncluded(root, resourcePath);
+            boolean result = filterRules.isIncluded(root, resourcePath);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST,
+                        "FilterablePathResource.includes({0},{1}): {2}\n"
+                                + "\t{3}",
+                        new Object[] {
+                            "" + urlRoot,
+                            "" + resource,
+                            "" + result,
+                            "" + filterRules
+                        });
+            }
+            return result;
         }
 
         @Override
@@ -754,14 +795,14 @@ implements
             if (obj == this) return true;
             if (getClass() != obj.getClass()) return false;
 
-            final ExcludeAwarePathResource other = (ExcludeAwarePathResource)obj;
+            final FilterablePathResource other = (FilterablePathResource)obj;
             return Objects.equals(this.root, other.root)
                     && Objects.equals(this.filterRules, other.filterRules);
         }
 
         @Override
         public String toString () {
-            return "ExcludeAwarePathResource{" + url + "}";
+            return "FilterablePathResource{" + url + "}";
         }
     }
 }

@@ -12,28 +12,29 @@ import org.netbeans.gradle.model.java.JavaSourceGroup;
 import org.netbeans.gradle.model.java.FilterPatterns;
 import org.openide.filesystems.FileObject;
 
-public final class ExcludeIncludeRules implements Serializable {
+public final class FilterRules implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
-    public static ExcludeIncludeRules ALLOW_ALL = new ExcludeIncludeRules(
+    public static FilterRules ALLOW_ALL = new FilterRules(
             FilterPatterns.ALLOW_ALL);
 
     private final FilterPatterns filterPatterns;
 
-    private ExcludeIncludeRules(FilterPatterns filterPatterns) {
+    private FilterRules(FilterPatterns filterPatterns) {
         ExceptionHelper.checkNotNullArgument(filterPatterns, "filterPatterns");
         this.filterPatterns = filterPatterns;
     }
 
-    private static ExcludeIncludeRules create(FilterPatterns filterPatterns) {
+    private static FilterRules create(FilterPatterns filterPatterns) {
         if (filterPatterns.isAllowAll()) {
             return ALLOW_ALL;
         }
 
-        return new ExcludeIncludeRules(filterPatterns);
+        return new FilterRules(filterPatterns);
     }
 
-    public static ExcludeIncludeRules create(JavaSourceGroup sourceGroup) {
+    public static FilterRules create(JavaSourceGroup sourceGroup) {
         return create(sourceGroup.getFilterPatterns());
     }
 
@@ -80,6 +81,11 @@ public final class ExcludeIncludeRules implements Serializable {
     }
 
     @Override
+    public String toString() {
+        return "FilterRules{" + filterPatterns + '}';
+    }
+    
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 89 * hash + Objects.hashCode(this.filterPatterns);
@@ -92,7 +98,7 @@ public final class ExcludeIncludeRules implements Serializable {
         if (obj == this) return true;
         if (getClass() != obj.getClass()) return false;
 
-        final ExcludeIncludeRules other = (ExcludeIncludeRules)obj;
+        final FilterRules other = (FilterRules)obj;
         return Objects.equals(this.filterPatterns, other.filterPatterns);
     }
 
@@ -109,12 +115,12 @@ public final class ExcludeIncludeRules implements Serializable {
 
         private final FilterPatterns sourceIncludePatterns;
 
-        public SerializedFormat(ExcludeIncludeRules source) {
+        public SerializedFormat(FilterRules source) {
             this.sourceIncludePatterns = source.filterPatterns;
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return ExcludeIncludeRules.create(sourceIncludePatterns);
+            return FilterRules.create(sourceIncludePatterns);
         }
     }
 }

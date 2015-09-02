@@ -17,7 +17,7 @@ import org.netbeans.gradle.model.java.JavaSourceGroupName;
 import org.netbeans.gradle.model.java.JavaSourceSet;
 import org.netbeans.gradle.model.util.CollectionUtils;
 import org.netbeans.gradle.project.NbStrings;
-import org.netbeans.gradle.project.util.ExcludeIncludeRules;
+import org.netbeans.gradle.project.util.FilterRules;
 import org.netbeans.gradle.project.util.StringUtils;
 
 public final class NamedSourceRoot {
@@ -25,13 +25,13 @@ public final class NamedSourceRoot {
     private final String displayName;
     private final File root;
 
-    private final ExcludeIncludeRules includeRules;
+    private final FilterRules includeRules;
 
     public NamedSourceRoot(
             JavaSourceGroupID groupID,
             String displayName,
             File root,
-            ExcludeIncludeRules includeRules) {
+            FilterRules includeRules) {
 
         ExceptionHelper.checkNotNullArgument(groupID, "groupID");
         ExceptionHelper.checkNotNullArgument(displayName, "displayName");
@@ -56,7 +56,7 @@ public final class NamedSourceRoot {
         return root;
     }
 
-    public ExcludeIncludeRules getIncludeRules() {
+    public FilterRules getIncludeRules() {
         return includeRules;
     }
 
@@ -133,7 +133,7 @@ public final class NamedSourceRoot {
                             :  NbStrings.getOtherPackageCaption(displaySourceSetName + "/" + groupDisplayName);
                 }
 
-                ExcludeIncludeRules includeRules = ExcludeIncludeRules.create(sourceGroup);
+                FilterRules includeRules = FilterRules.create(sourceGroup);
 
                 if (sourceRoots.size() == 1) {
                     result.add(new NamedSourceRoot(

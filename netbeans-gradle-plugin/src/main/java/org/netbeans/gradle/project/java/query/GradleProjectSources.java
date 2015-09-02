@@ -34,7 +34,7 @@ import org.netbeans.gradle.project.java.model.NamedSourceRoot;
 import org.netbeans.gradle.project.java.model.NbJavaModel;
 import org.netbeans.gradle.project.java.model.NbJavaModule;
 import org.netbeans.gradle.project.java.model.NbListedDir;
-import org.netbeans.gradle.project.util.ExcludeIncludeRules;
+import org.netbeans.gradle.project.util.FilterRules;
 import org.netbeans.gradle.project.util.GradleFileUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
@@ -268,7 +268,7 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
     }
 
     private static class GradleSourceGroup implements SourceGroup {
-        private final ExcludeIncludeRules includeRules;
+        private final FilterRules includeRules;
         private final FileObject location;
         private final PropertyChangeSupport changes;
         private final String displayName;
@@ -280,10 +280,10 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
         }
 
         public GradleSourceGroup(FileObject location, String displayName) {
-            this(location, displayName, ExcludeIncludeRules.ALLOW_ALL);
+            this(location, displayName, FilterRules.ALLOW_ALL);
         }
 
-        public GradleSourceGroup(FileObject location, String displayName, ExcludeIncludeRules includeRules) {
+        public GradleSourceGroup(FileObject location, String displayName, FilterRules includeRules) {
             this.includeRules = includeRules;
             this.location = location;
             this.displayName = displayName;

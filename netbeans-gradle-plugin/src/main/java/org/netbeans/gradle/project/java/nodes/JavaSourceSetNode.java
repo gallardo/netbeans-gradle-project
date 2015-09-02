@@ -24,7 +24,7 @@ import org.netbeans.gradle.project.java.model.JavaSourceGroupID;
 import org.netbeans.gradle.project.java.model.NamedFile;
 import org.netbeans.gradle.project.java.model.NamedSourceRoot;
 import org.netbeans.gradle.project.java.query.GradleProjectSources;
-import org.netbeans.gradle.project.util.ExcludeIncludeRules;
+import org.netbeans.gradle.project.util.FilterRules;
 import org.netbeans.gradle.project.util.ListenerRegistrations;
 import org.netbeans.gradle.project.util.RefreshableChildren;
 import org.netbeans.gradle.project.util.StringUtils;
@@ -183,7 +183,7 @@ public final class JavaSourceSetNode extends AbstractNode {
                 for (JavaSourceGroup sourceGroup: sortGroups(sourceSet.getSourceGroups())) {
                     String groupName = NamedSourceRoot.getSourceGroupDisplayName(sourceGroup);
                     Set<File> roots = sourceGroup.getSourceRoots();
-                    ExcludeIncludeRules includeRules = ExcludeIncludeRules.create(sourceGroup);
+                    FilterRules includeRules = FilterRules.create(sourceGroup);
                     JavaSourceGroupID groupID = new JavaSourceGroupID(sourceSetName, sourceGroup.getGroupName());
 
                     if (roots.size() == 1) {
