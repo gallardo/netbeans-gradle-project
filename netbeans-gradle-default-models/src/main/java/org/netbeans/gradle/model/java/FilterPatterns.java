@@ -38,19 +38,19 @@ public class FilterPatterns implements Serializable {
 
     /**
      * 
-     * @param excludePatterns cannot be <tt>null</tt> nor contain <tt>null</tt> elements
-     * @param includePatterns cannot be <tt>null</tt> nor contain <tt>null</tt> elements
-     * @return if both <tt>excludePatterns</tt> and <tt>includePatterns</tt> are empty, the
-     *      <tt>FilePatterns.ALLOW_ALL</tt>. If not, a new <tt>FilePatterns</tt> instance. Notice that
+     * @param excludePatterns cannot be {@code null} nor contain {@code null} elements
+     * @param includePatterns cannot be {@code null} nor contain {@code null} elements
+     * @return {@link #ALLOW_ALL} if both {@code excludePatterns} and {@code includePatterns} are empty. If not,
+     *      a new {@code FilePatterns} instance. Notice that
      *      <ul>
-     *          <li><tt>create(Collections.&lt;String&gt;emptyList(),Collections.&lt;String&gt;emptyList())</tt></li>
-     *          <li>and <tt>create("","")</tt></li>
+     *          <li>{@code create(Collections.<String>emptyList(),Collections.<String>emptyList())}</li>
+     *          <li>and {@code create(Arrays.asList(""),Arrays.asList(""))}</li>
      *      </ul>
-     *      return different <tt>FilterPatterns</tt> instances: the former, the <tt>FilePatterns.ALLOW_ALL</tt>;
-     *      the latter, a <tt>FilterPatterns</tt> instance with two empty strings (<tt>""</tt>) patterns.
+     *      return different {@code FilterPatterns} instances: the former, the {@code FilePatterns.ALLOW_ALL};
+     *      the latter, a {@code FilterPatterns} instance with two empty strings ({@code ""}) patterns.
      *      
-     * @throws NullPointerException if any of <tt>excludePatterns</tt> or <tt>includePatterns</tt> is <tt>null</tt>,
-     *      or if they contain any <tt>null</tt> element.
+     * @throws NullPointerException if any of {@code excludePatterns} or {@code includePatterns} is {@code null},
+     *      or if they contain any {@code null} element.
      */
     public static FilterPatterns create(
             Collection<? extends String> excludePatterns,
