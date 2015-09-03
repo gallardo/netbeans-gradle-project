@@ -42,16 +42,16 @@ public final class FilterRules implements Serializable {
         return filterPatterns.isAllowAll();
     }
 
-    public boolean isIncluded(Path rootPath, FileObject file) {
+    public boolean isIncluded(Path rootPath, FileObject fileObject) {
         ExceptionHelper.checkNotNullArgument(rootPath, "rootPath");
-        ExceptionHelper.checkNotNullArgument(file, "file");
+        ExceptionHelper.checkNotNullArgument(fileObject, "fileObject");
 
         if (isAllowAll()) {
             return true;
         }
 
-        Path path = GradleFileUtils.toPath(file);
-        return path != null ? isIncluded(rootPath, path) : true; // XXX: (null==path)=> true? 
+        Path filePath = GradleFileUtils.toPath(fileObject);
+        return filePath != null ? isIncluded(rootPath, filePath) : true; // XXX: (null==path)=> true? 
     }
 
     public boolean isIncluded(Path rootPath, File file) {
@@ -65,16 +65,16 @@ public final class FilterRules implements Serializable {
         return isIncluded(rootPath, file.toPath());
     }
 
-    public boolean isIncluded(Path rootPath, Path file) {
+    public boolean isIncluded(Path rootPath, Path filePath) {
         ExceptionHelper.checkNotNullArgument(rootPath, "rootPath");
-        ExceptionHelper.checkNotNullArgument(file, "file");
+        ExceptionHelper.checkNotNullArgument(filePath, "filePath");
 
         if (isAllowAll()) {
             return true;
         }
 
         return ExcludeInclude.isFileIncludedUnderRootpath(
-                file,
+                filePath,
                 rootPath,
                 filterPatterns.getExcludePatterns(),
                 filterPatterns.getIncludePatterns());
