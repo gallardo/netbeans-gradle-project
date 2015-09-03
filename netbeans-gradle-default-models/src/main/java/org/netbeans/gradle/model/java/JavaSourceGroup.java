@@ -25,7 +25,7 @@ import org.netbeans.gradle.model.util.CollectionUtils;
  * The serialized format of this class is not subject to any kind of backward
  * or forward compatibility.
  */
-public final class JavaSourceGroup implements Serializable {
+public class JavaSourceGroup implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final JavaSourceGroupName groupName;
