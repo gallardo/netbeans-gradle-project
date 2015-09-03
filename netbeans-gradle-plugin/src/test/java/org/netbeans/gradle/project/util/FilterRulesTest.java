@@ -5,17 +5,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.netbeans.gradle.model.java.FilterPatterns;
-import org.netbeans.gradle.model.java.JavaSourceGroup;
 
 /**
  *
@@ -86,8 +81,6 @@ public class FilterRulesTest {
             ,{ "/A", "/A/BA/A", "/A**", null, false } // 50
         });
     }
-    @Mock
-    JavaSourceGroup sourceGroup;
     
     private static final Collection<String> EMPTY_COLLECTION = new ArrayList<>();
     private final String rootPathName;
@@ -105,11 +98,6 @@ public class FilterRulesTest {
     }
     
     
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-    
     /**
      * Test of {@link FilterRules#isIncluded(java.nio.file.Path, java.nio.file.Path)}
      */
@@ -119,11 +107,7 @@ public class FilterRulesTest {
         Path rootPath = new File(rootPathName).toPath();
         Path filePath = new File(fileName).toPath();
         
-        Mockito.when(sourceGroup.getFilterPatterns())
-                .thenReturn(FilterPatterns.create(excludes,includes));
-        
-        // TODO: Refactor constructor: why passing JavaSourceGroup, when FilterPatterns suffices?
-        FilterRules filterRules = FilterRules.create(sourceGroup);
+        FilterRules filterRules = FilterRules.create(FilterPatterns.create(excludes,includes));
         assertEquals("Failed using rules: " + filterRules,
                 expected, filterRules.isIncluded(rootPath, filePath));
     }

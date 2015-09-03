@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Objects;
 import org.jtrim.utils.ExceptionHelper;
-import org.netbeans.gradle.model.java.JavaSourceGroup;
 import org.netbeans.gradle.model.java.FilterPatterns;
 import org.openide.filesystems.FileObject;
 
@@ -26,16 +25,12 @@ public final class FilterRules implements Serializable {
         this.filterPatterns = filterPatterns;
     }
 
-    private static FilterRules create(FilterPatterns filterPatterns) {
+    public static FilterRules create(FilterPatterns filterPatterns) {
         if (filterPatterns.isAllowAll()) {
             return ALLOW_ALL;
         }
 
         return new FilterRules(filterPatterns);
-    }
-
-    public static FilterRules create(JavaSourceGroup sourceGroup) {
-        return create(sourceGroup.getFilterPatterns());
     }
 
     public boolean isAllowAll() {

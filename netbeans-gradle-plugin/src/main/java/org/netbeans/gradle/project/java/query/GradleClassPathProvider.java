@@ -246,7 +246,7 @@ implements
             }
 
             for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
-                FilterRules filterRules = FilterRules.create(sourceGroup);
+                FilterRules filterRules = FilterRules.create(sourceGroup.getFilterPatterns());
                 if (isInOneOf(file, sourceGroup.getSourceRoots(), filterRules)) {
                     return sourceSet;
                 }
@@ -303,7 +303,7 @@ implements
                             sourceGroup.getSourceRoots(),
                             sourceGroup.getFilterPatterns()});
                 }
-                FilterRules rules = FilterRules.create(sourceGroup);
+                FilterRules rules = FilterRules.create(sourceGroup.getFilterPatterns());
                 Set<File> sourceRoots = sourceGroup.getSourceRoots();
 
                 result.addAll(getPathResources(sourceRoots, new HashSet<File>(), rules));
@@ -420,7 +420,7 @@ implements
         List<PathResourceImplementation> sourcePaths = new LinkedList<>();
         for (JavaSourceGroup sourceGroup: sourceSet.getSourceGroups()) {
             Set<File> sourceRoots = sourceGroup.getSourceRoots();
-            FilterRules includeRules = FilterRules.create(sourceGroup);
+            FilterRules includeRules = FilterRules.create(sourceGroup.getFilterPatterns());
 
             sourcePaths.addAll(getPathResources(sourceRoots, invalid, includeRules));
         }

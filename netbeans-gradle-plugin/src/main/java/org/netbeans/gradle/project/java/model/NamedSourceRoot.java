@@ -133,7 +133,7 @@ public final class NamedSourceRoot {
                             :  NbStrings.getOtherPackageCaption(displaySourceSetName + "/" + groupDisplayName);
                 }
 
-                FilterRules includeRules = FilterRules.create(sourceGroup);
+                FilterRules includeRules = FilterRules.create(sourceGroup.getFilterPatterns());
 
                 if (sourceRoots.size() == 1) {
                     result.add(new NamedSourceRoot(

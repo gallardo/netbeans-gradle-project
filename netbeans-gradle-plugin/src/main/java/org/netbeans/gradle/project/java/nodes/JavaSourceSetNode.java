@@ -183,7 +183,7 @@ public final class JavaSourceSetNode extends AbstractNode {
                 for (JavaSourceGroup sourceGroup: sortGroups(sourceSet.getSourceGroups())) {
                     String groupName = NamedSourceRoot.getSourceGroupDisplayName(sourceGroup);
                     Set<File> roots = sourceGroup.getSourceRoots();
-                    FilterRules includeRules = FilterRules.create(sourceGroup);
+                    FilterRules includeRules = FilterRules.create(sourceGroup.getFilterPatterns());
                     JavaSourceGroupID groupID = new JavaSourceGroupID(sourceSetName, sourceGroup.getGroupName());
 
                     if (roots.size() == 1) {
