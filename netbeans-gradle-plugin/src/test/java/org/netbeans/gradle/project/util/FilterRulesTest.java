@@ -20,43 +20,70 @@ import org.netbeans.gradle.model.java.JavaSourceGroup;
 /**
  *
  * @author alberto
+ * @since 2015-09-02
  */
 @RunWith(Parameterized.class)
 public class FilterRulesTest {
 
-    @Parameters(name = "Case {index} - rootPath \"{0}\"; file \"{1}\"; inc:[{2}]; exc:[{3}] -> Expected {4} / {5}")
+    @Parameters(name = "Case {index} - rootPath \"{0}\"; file \"{1}\"; inc:[{2}]; exc:[{3}] -> Expected {4}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-             { "/A", "/", null, null, true, true }        // 0
-            ,{ "/A", "/A", null, null, true, true }        
-            ,{ "/A", "/B", null, null, true, true }
-            ,{ "/A/A", "/", null, null, true, true }
-            ,{ "/A/A", "/A", null, null, true, true }
-            ,{ "/A/A", "/A/B", null, null, true, true }   // 5
+             { "/A", "/", null, null, true }        // 0
+            ,{ "/A", "/A", null, null, true }        
+            ,{ "/A", "/B", null, null, true }
+            ,{ "/A/A", "/", null, null, true }
+            ,{ "/A/A", "/A", null, null, true }
+            ,{ "/A/A", "/A/A", null, null, true }   // 5
+            ,{ "/A/A", "/A/B", null, null, true } 
+            ,{ "/A/A", "/B/A", null, null, true }
 
                 
-            ,{ "/A", "/", "**", null, true, false } 
-            ,{ "/A", "/A", "**", null, true, true }
-            ,{ "/A", "/B", "**", null, true, false }
-            ,{ "/A", "/A/A", "**", null, true, true }
-            ,{ "/A", "/B/A", "**", null, true, false }
-            ,{ "/A", "/A/A/A", "**", null, true, true }
+            ,{ "/A", "/", "**", null, false } 
+            ,{ "/A", "/A", "**", null, true }
+            ,{ "/A", "/B", "**", null, false }      // 10
+            ,{ "/A", "/A/A", "**", null, true }
+            ,{ "/A", "/A/B", "**", null, true }
+            ,{ "/A", "/B/A", "**", null, false }
+            ,{ "/A", "/A/A/A", "**", null, true }
                 
-            ,{ "/A", "/", "/A/**", null, true, false } 
-            ,{ "/A", "/A", "/A/**", null, true, true }
-            ,{ "/A", "/B", "/A/**", null, true, false }
-            ,{ "/A", "/A/A", "/A/**", null, true, true }
-            ,{ "/A", "/B/A", "/A/**", null, true, false }
-            ,{ "/A", "/A/A/A", "/A/**", null, true, true }
+            ,{ "/A", "/", "/A/**", null, false }    // 15
+            ,{ "/A", "/A", "/A/**", null, false }
+            ,{ "/A", "/B", "/A/**", null, false }
+            ,{ "/A", "/A/A", "/A/**", null, false }
+            ,{ "/A", "/A/B", "/A/**", null, false }
+            ,{ "/A", "/B/A", "/A/**", null, false }    // 20
+            ,{ "/A", "/B/B", "/A/**", null, false }
+            ,{ "/A", "/A/A/A", "/A/**", null, true }   
+            ,{ "/A", "/A/A/B", "/A/**", null, true }
+            ,{ "/A", "/A/B/A", "/A/**", null, false }
                 
-            ,{ "/A", "/", "/A/A/**", null, true, false } 
-            ,{ "/A", "/A", "/A/A/**", null, true, true }
-            ,{ "/A", "/B", "/A/A/**", null, true, false }
-            ,{ "/A", "/A/A", "/A/A/**", null, true, true }
-            ,{ "/A", "/B/A", "/A/A/**", null, true, false }
-            ,{ "/A", "/A/A/A", "/A/A/**", null, true, true }
-            ,{ "/A", "/A/B/A", "/A/A/**", null, true, false }
-            ,{ "/A", "/A/A/B", "/A/A/**", null, true, true }
+            ,{ "/A", "/", "/A/A/**", null, false }     // 25
+            ,{ "/A", "/A", "/A/A/**", null, false }
+            ,{ "/A", "/B", "/A/A/**", null, false }    
+            ,{ "/A", "/A/A", "/A/A/**", null, false }
+            ,{ "/A", "/A/B", "/A/A/**", null, false }
+            ,{ "/A", "/B/A", "/A/A/**", null, false }  // 30
+            ,{ "/A", "/A/A/A", "/A/A/**", null, false }
+            ,{ "/A", "/A/A/B", "/A/A/**", null, false } 
+            ,{ "/A", "/A/B/A", "/A/A/**", null, false }
+            ,{ "/A", "/A/A/A/A", "/A/A/**", null, true }
+                
+            ,{ "/A", "/", "/A**", null, false }       // 35
+            ,{ "/A", "/A", "/A**", null, false }
+            ,{ "/A", "/B", "/A**", null, false }
+            ,{ "/A", "/A/A", "/A**", null, true }
+            ,{ "/A", "/A/B", "/A**", null, false }
+            ,{ "/A", "/A/AA", "/A**", null, true }    // 40
+            ,{ "/A", "/A/AB", "/A**", null, true }
+            ,{ "/A", "/A/BA", "/A**", null, false }
+            ,{ "/A", "/B/A", "/A**", null, false }    
+            ,{ "/A", "/B/B", "/A**", null, false }
+            ,{ "/A", "/A/A/A", "/A**", null, true }   // 45
+            ,{ "/A", "/A/A/B", "/A**", null, true }
+            ,{ "/A", "/A/B/A", "/A**", null, false }
+            ,{ "/A", "/A/AA/A", "/A**", null, true }   
+            ,{ "/A", "/A/AB/B", "/A**", null, true }
+            ,{ "/A", "/A/BA/A", "/A**", null, false } // 50
         });
     }
     @Mock
@@ -67,17 +94,14 @@ public class FilterRulesTest {
     private final String fileName;
     private final Collection<String> includes;
     private final Collection<String> excludes;
-    private final boolean expectedWhenAllowAll;
-    private final boolean expectedWhenUsingFilters;
+    private final boolean expected;
 
-    public FilterRulesTest(String rootPathName, String fileName, String includes, String excludes,
-            boolean expectedWhenAllowAll, boolean expectedWhenUsingFilters) {
+    public FilterRulesTest(String rootPathName, String fileName, String includes, String excludes, boolean expected) {
         this.rootPathName = rootPathName;
         this.fileName = fileName;
         this.includes = (null==includes)?EMPTY_COLLECTION:Arrays.asList(includes.split(","));
         this.excludes = (null==excludes)?EMPTY_COLLECTION:Arrays.asList(excludes.split(","));
-        this.expectedWhenAllowAll = expectedWhenAllowAll;
-        this.expectedWhenUsingFilters = expectedWhenUsingFilters;
+        this.expected = expected;
     }
     
     
@@ -87,26 +111,21 @@ public class FilterRulesTest {
     }
     
     /**
-     * Test of isIncluded method, of class FilterRules.
+     * Test of {@link FilterRules#isIncluded(java.nio.file.Path, java.nio.file.Path)}
      */
     @Test
-    public void testIsIncluded_Path_Path() {
-        System.err.println("testIsIncluded_for_empty_filter");
+    public void testIsIncluded() {
+        System.err.println("testIsIncluded");
         Path rootPath = new File(rootPathName).toPath();
         Path filePath = new File(fileName).toPath();
         
         Mockito.when(sourceGroup.getFilterPatterns())
-                .thenReturn(FilterPatterns.ALLOW_ALL)                  // First invokation: accept all
-                .thenReturn(FilterPatterns.create(excludes,includes)); // Second invokation: use test data
+                .thenReturn(FilterPatterns.create(excludes,includes));
         
-        // TODO: Refactor constructor: why passing JavaSourceGroup, when FilterPatterns suffice?
-        FilterRules filterRulesAllowAll = FilterRules.create(sourceGroup);
-        assertEquals("Failed expectation with filterRulesAllowAll",
-                expectedWhenAllowAll, filterRulesAllowAll.isIncluded(rootPath, filePath));
-        
-        FilterRules filterRulesNonEmpty = FilterRules.create(sourceGroup);
-        assertEquals("Failed expectation with filterRulesNonEmpty",
-                expectedWhenUsingFilters, filterRulesNonEmpty.isIncluded(rootPath, filePath));
+        // TODO: Refactor constructor: why passing JavaSourceGroup, when FilterPatterns suffices?
+        FilterRules filterRules = FilterRules.create(sourceGroup);
+        assertEquals("Failed using rules: " + filterRules,
+                expected, filterRules.isIncluded(rootPath, filePath));
     }
 
 }
