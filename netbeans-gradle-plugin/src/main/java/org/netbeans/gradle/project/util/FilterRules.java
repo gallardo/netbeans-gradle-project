@@ -60,6 +60,14 @@ public final class FilterRules implements Serializable {
         return isIncluded(rootPath, file.toPath());
     }
 
+    /**
+     * @param rootPath shouldn't be {@code null}
+     * @param filePath shouldn't be {@code null}
+     * @return {@code true} if this rule {@link #isAllowAll() is ALLOW_ALL}; or {@link
+     *      ExcludeInclude#isFileIncludedUnderRootpath(java.nio.file.Path,
+     *      java.nio.file.Path, java.util.Collection, java.util.Collection) }
+     * @throws {@code NullPointerException} if any of the parameters is {@code null}
+     */
     public boolean isIncluded(Path rootPath, Path filePath) {
         ExceptionHelper.checkNotNullArgument(rootPath, "rootPath");
         ExceptionHelper.checkNotNullArgument(filePath, "filePath");

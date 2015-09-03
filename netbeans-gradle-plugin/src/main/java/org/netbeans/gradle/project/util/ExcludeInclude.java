@@ -8,25 +8,27 @@ import java.util.Collection;
 public final class ExcludeInclude {
     /**
      * 
-     * @param file to test
-     * @param rootPath file must be under this path
-     * @param excludePatterns will be translated into <tt>glob:</tt> patterns
-     * @param includePatterns will be translated into <tt>glob:</tt> patterns
-     * @return <tt>true</tt> if <ul>
-     *      <li><tt>file</tt> is under <tt>rootPath</tt></li>
-     *      <li><strong>and</strong> doesn't match any <tt>excludePatterns</tt></li>
-     *      <li><strong>and</strong> matches at least one <tt>includePatterns</tt> <strong>or</strong>
-     *          <tt>includePatterns</tt> is empty</li>
-     *      </ul>
+     * Test if {@code file} should be considered according to the filter patterns provided.
+     * @param filePath to test
+     * @param rootPath {@code file} must be under this path
+     * @param excludePatterns will be translated into {@code glob:} patterns
+     * @param includePatterns will be translated into {@code glob:} patterns
+     * @return {@code true} if
+     * <ul>
+     *      <li>{@code file} is under {@code rootPath}</li>
+     *      <li><strong>and</strong> doesn't match any {@code excludePatterns}</li>
+     *      <li><strong>and</strong> matches at least one {@code includePatterns} <strong>or</strong>
+     *          {@code includePatterns} is empty.</li>
+     * </ul>
      */
     public static boolean isFileIncludedUnderRootpath(
-            Path file,
+            Path filePath,
             Path rootPath,
             Collection<String> excludePatterns,
             Collection<String> includePatterns) {
 
         Path absoluteRoot = rootPath.toAbsolutePath();
-        Path testedPath = file.toAbsolutePath();
+        Path testedPath = filePath.toAbsolutePath();
 
         if (!testedPath.startsWith(absoluteRoot)) {
             return false;
