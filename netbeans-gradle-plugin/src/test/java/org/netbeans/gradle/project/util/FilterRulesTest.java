@@ -22,6 +22,8 @@ public class FilterRulesTest {
 
     @Parameters(name = "Case {index} - rootPath \"{0}\"; file \"{1}\"; inc:[{2}]; exc:[{3}] -> Expected {4}")
     public static Iterable<Object[]> data() {
+        // Cases marked with (*) are the special cases where the tested file should not be pruned despite only
+        // matching the begginning of the glob pattern
         return Arrays.asList(new Object[][] {
              { "/A", "/", null, null, true }        // 0
             ,{ "/A", "/A", null, null, true }        
@@ -42,9 +44,9 @@ public class FilterRulesTest {
             ,{ "/A", "/A/A/A", "**", null, true }
                 
             ,{ "/A", "/", "/A/**", null, false }    // 15
-            ,{ "/A", "/A", "/A/**", null, false }
+            ,{ "/A", "/A", "/A/**", null, true }    // (*)
             ,{ "/A", "/B", "/A/**", null, false }
-            ,{ "/A", "/A/A", "/A/**", null, false }
+            ,{ "/A", "/A/A", "/A/**", null, true }  // (*)
             ,{ "/A", "/A/B", "/A/**", null, false }
             ,{ "/A", "/B/A", "/A/**", null, false }    // 20
             ,{ "/A", "/B/B", "/A/**", null, false }
@@ -53,18 +55,18 @@ public class FilterRulesTest {
             ,{ "/A", "/A/B/A", "/A/**", null, false }
                 
             ,{ "/A", "/", "/A/A/**", null, false }     // 25
-            ,{ "/A", "/A", "/A/A/**", null, false }
+            ,{ "/A", "/A", "/A/A/**", null, true }     // (*)
             ,{ "/A", "/B", "/A/A/**", null, false }    
-            ,{ "/A", "/A/A", "/A/A/**", null, false }
+            ,{ "/A", "/A/A", "/A/A/**", null, true }   // (*)
             ,{ "/A", "/A/B", "/A/A/**", null, false }
             ,{ "/A", "/B/A", "/A/A/**", null, false }  // 30
-            ,{ "/A", "/A/A/A", "/A/A/**", null, false }
+            ,{ "/A", "/A/A/A", "/A/A/**", null, true } // (*)
             ,{ "/A", "/A/A/B", "/A/A/**", null, false } 
             ,{ "/A", "/A/B/A", "/A/A/**", null, false }
             ,{ "/A", "/A/A/A/A", "/A/A/**", null, true }
                 
             ,{ "/A", "/", "/A**", null, false }       // 35
-            ,{ "/A", "/A", "/A**", null, false }
+            ,{ "/A", "/A", "/A**", null, true }       // (*)
             ,{ "/A", "/B", "/A**", null, false }
             ,{ "/A", "/A/A", "/A**", null, true }
             ,{ "/A", "/A/B", "/A**", null, false }
