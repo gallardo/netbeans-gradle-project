@@ -9,12 +9,18 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.gradle.model.util.CollectionUtils;
 
-public final class FilterPatterns implements Serializable {
+public class FilterPatterns implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static FilterPatterns ALLOW_ALL = new FilterPatterns(
             Collections.<String>emptySet(),
-            Collections.<String>emptySet());
+            Collections.<String>emptySet()) {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isAllowAll() {
+            return true;
+        }};
 
     private final Set<String> excludePatterns;
     private final Set<String> includePatterns;
@@ -30,6 +36,22 @@ public final class FilterPatterns implements Serializable {
         CollectionUtils.checkNoNullElements(includePatterns, "includePatterns");
     }
 
+    /**
+     * 
+     * @param excludePatterns cannot be <tt>null</tt> nor contain <tt>null</tt> elements
+     * @param includePatterns cannot be <tt>null</tt> nor contain <tt>null</tt> elements
+     * @return if both <tt>excludePatterns</tt> and <tt>includePatterns</tt> are empty, the
+     *      <tt>FilePatterns.ALLOW_ALL</tt>. If not, a new <tt>FilePatterns</tt> instance. Notice that
+     *      <ul>
+     *          <li><tt>create(Collections.&lt;String&gt;emptyList(),Collections.&lt;String&gt;emptyList())</tt></li>
+     *          <li>and <tt>create("","")</tt></li>
+     *      </ul>
+     *      return different <tt>FilterPatterns</tt> instances: the former, the <tt>FilePatterns.ALLOW_ALL</tt>;
+     *      the latter, a <tt>FilterPatterns</tt> instance with two empty strings (<tt>""</tt>) patterns.
+     *      
+     * @throws NullPointerException if any of <tt>excludePatterns</tt> or <tt>includePatterns</tt> is <tt>null</tt>,
+     *      or if they contain any <tt>null</tt> element.
+     */
     public static FilterPatterns create(
             Collection<? extends String> excludePatterns,
             Collection<? extends String> includePatterns) {
