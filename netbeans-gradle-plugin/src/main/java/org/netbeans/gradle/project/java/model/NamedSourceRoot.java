@@ -56,7 +56,7 @@ public final class NamedSourceRoot {
         return root;
     }
 
-    public FilterRules getIncludeRules() {
+    public FilterRules getFilterRules() {
         return includeRules;
     }
 

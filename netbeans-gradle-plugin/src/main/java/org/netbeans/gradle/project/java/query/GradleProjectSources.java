@@ -87,7 +87,7 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
         if (sourceDir.isDirectory()) {
             FileObject groupRoot = FileUtil.toFileObject(sourceDir);
             if (groupRoot != null) {
-                return new GradleSourceGroup(groupRoot, root.getDisplayName(), root.getIncludeRules());
+                return new GradleSourceGroup(groupRoot, root.getDisplayName(), root.getFilterRules());
             }
         }
         return null;
@@ -268,12 +268,12 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
     }
 
     private static class GradleSourceGroup implements SourceGroup {
-        private final FilterRules includeRules;
-        private final FileObject location;
+        private final FilterRules filterRules;
+        private final FileObject srcDir;
         private final PropertyChangeSupport changes;
         private final String displayName;
 
-        private final AtomicReference<Path> locationPathRef;
+        private final AtomicReference<Path> srcDirPathRef;
 
         public GradleSourceGroup(FileObject location) {
             this(location, NbStrings.getSrcPackageCaption());
@@ -283,20 +283,20 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
             this(location, displayName, FilterRules.ALLOW_ALL);
         }
 
-        public GradleSourceGroup(FileObject location, String displayName, FilterRules includeRules) {
-            this.includeRules = includeRules;
-            this.location = location;
+        public GradleSourceGroup(FileObject srcDir, String displayName, FilterRules filterRules) {
+            this.filterRules = filterRules;
+            this.srcDir = srcDir;
             this.displayName = displayName;
             this.changes = new PropertyChangeSupport(this);
-            this.locationPathRef = new AtomicReference<>(null);
+            this.srcDirPathRef = new AtomicReference<>(null);
         }
 
-        public Path getRootPath() {
-            Path result = locationPathRef.get();
+        public Path getSrcDirPath() {
+            Path result = srcDirPathRef.get();
             if (result == null) {
-                result = GradleFileUtils.toPath(location);
-                if (!locationPathRef.compareAndSet(null, result)) {
-                    result = locationPathRef.get();
+                result = GradleFileUtils.toPath(srcDir);
+                if (!srcDirPathRef.compareAndSet(null, result)) {
+                    result = srcDirPathRef.get();
                 }
             }
             return result;
@@ -304,12 +304,12 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
 
         @Override
         public FileObject getRootFolder() {
-            return location;
+            return srcDir;
         }
 
         @Override
         public String getName() {
-            String locationStr = location.getPath();
+            String locationStr = srcDir.getPath();
             return locationStr.length() > 0 ? locationStr : "generic";
         }
 
@@ -324,12 +324,12 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
         }
 
         private boolean rulesAllow(FileObject file) {
-            Path rootPath = getRootPath();
-            if (rootPath == null) {
+            Path srcDirPath = getSrcDirPath();
+            if (srcDirPath == null) {
                 return true;
             }
 
-            boolean result = includeRules.isIncluded(rootPath, file);
+            boolean result = filterRules.isIncluded(srcDirPath, file);
             // Directories are always allowed because otherwise
             // package view might skip the entire directory, regardless that
             // it might contain included sub directories.
@@ -338,11 +338,11 @@ public final class GradleProjectSources implements Sources, JavaModelChangeListe
 
         @Override
         public boolean contains(FileObject file) {
-            if (file == location) {
+            if (file == srcDir) {
                 return true;
             }
 
-            if (FileUtil.getRelativePath(location, file) == null) {
+            if (FileUtil.getRelativePath(srcDir, file) == null) {
                 return false;
             }
 
